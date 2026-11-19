@@ -12,6 +12,14 @@
   var FORM_ENDPOINT = "";
   var BUSINESS_EMAIL = "realiclean@gmail.com";
 
+  /*
+   * Demo mode: submitting the quote form plays an animated preview of the
+   * production automation (email, texts, QuickBooks customer + estimate, lead
+   * log) using the visitor's own details. Nothing is sent. Set to false, and
+   * remove the .demo-banner and .automation-card markup, when going live.
+   */
+  var DEMO_MODE = true;
+
   /* ---- Header shadow on scroll ---- */
   var header = document.querySelector(".site-header");
   var onScroll = function () {
@@ -121,6 +129,11 @@
       message: form.elements.message.value.trim()
     };
 
+    if (DEMO_MODE) {
+      runDemo(data);
+      return;
+    }
+
     if (FORM_ENDPOINT) {
       var btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
@@ -164,6 +177,65 @@
       e.target.classList.remove("invalid");
       e.target.removeAttribute("aria-invalid");
     }
+  });
+
+  /* ---- Demo automation preview ---- */
+  var flow = document.getElementById("flow");
+  var flowTimers = [];
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function runDemo(data) {
+    var values = {
+      first: data.name.split(/\s+/)[0],
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      services: data.services === "Not specified" ? "Cleaning (details TBD)" : data.services,
+      area: data.area === "Not specified" ? "area TBD" : data.area,
+      frequency: data.frequency === "Not specified" ? "Frequency TBD" : data.frequency
+    };
+    flow.querySelectorAll("[data-f]").forEach(function (el) {
+      el.textContent = values[el.getAttribute("data-f")];
+    });
+
+    var steps = flow.querySelectorAll(".flow-steps li");
+    var done = flow.querySelector(".flow-done");
+    steps.forEach(function (li) { li.className = ""; });
+    done.hidden = true;
+
+    form.hidden = true;
+    flow.hidden = false;
+    flow.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    flow.focus({ preventScroll: true });
+
+    if (reduceMotion) {
+      steps.forEach(function (li) { li.classList.add("done"); });
+      done.hidden = false;
+      return;
+    }
+
+    var STEP_MS = 900;
+    steps.forEach(function (li, i) {
+      flowTimers.push(setTimeout(function () {
+        if (i > 0) steps[i - 1].classList.replace("active", "done");
+        li.classList.add("active");
+      }, 400 + i * STEP_MS));
+    });
+    flowTimers.push(setTimeout(function () {
+      steps[steps.length - 1].classList.replace("active", "done");
+      done.hidden = false;
+    }, 400 + steps.length * STEP_MS));
+  }
+
+  document.getElementById("flow-reset").addEventListener("click", function () {
+    flowTimers.forEach(clearTimeout);
+    flowTimers = [];
+    flow.hidden = true;
+    form.hidden = false;
+    form.reset();
+    setNote("We’ll never share your information. Quotes are always free.");
+    form.elements.name.focus({ preventScroll: true });
+    document.getElementById("quote").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
   });
 
   /* ---- Footer year ---- */

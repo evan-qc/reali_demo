@@ -31,7 +31,26 @@ On Netlify, Vercel or Cloudflare Pages, point the project at the repo root with 
 
 ## Quote form
 
-By default, **Request my free quote** opens the visitor's email app with a pre-filled message to `realiclean@gmail.com`. To have submissions delivered without relying on the visitor's email app, create a free form endpoint (for example Formspree) and paste its URL into `FORM_ENDPOINT` at the top of `assets/js/main.js`.
+The form is in **demo mode** (`DEMO_MODE = true` in `assets/js/main.js`). A yellow banner on the form and a "Demo preview" card beside it explain what the live version will automate. Submitting plays an animated walkthrough of the production flow using the visitor's own details. Nothing is sent.
+
+The demo flow shows:
+
+1. Email to Reali Clean with every detail of the request
+2. Text alert to the owner's phone
+3. Auto-reply text to the customer
+4. QuickBooks Online customer created
+5. QuickBooks Online draft estimate created from the selected services
+6. Lead logged in a tracker (Airtable or Google Sheets) with a follow-up reminder
+
+The side card also lists a booking link and post-job review requests.
+
+### Going live
+
+1. Point the form at an automation endpoint (Zapier/Make webhook, or a small serverless function) by setting `FORM_ENDPOINT` in `assets/js/main.js`. The form POSTs JSON with `name`, `phone`, `email`, `services`, `area`, `frequency` and `message`.
+2. Wire that endpoint to email, SMS (e.g. Twilio), QuickBooks Online (customer + estimate), and the lead tracker.
+3. Set `DEMO_MODE = false` and remove the `.demo-banner` and `.automation-card` markup from `index.html`.
+
+If `DEMO_MODE` is false and `FORM_ENDPOINT` is empty, the form opens the visitor's email app with a pre-filled message to `realiclean@gmail.com`.
 
 ## Before going live
 
