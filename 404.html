@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page moved | Reali Clean</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script>
+    // Old-site links: send each one to the closest page on the new site.
+    (function () {
+      var exact = {"/services-customers":"/services/","/faq-privacy":"/#faq","/locations":"/service-areas/","/location":"/service-areas/","/home":"/","/contact":"/#quote","/contact-us":"/#quote","/quote":"/#quote","/free-quote":"/#quote","/about":"/#about","/about-us":"/#about","/reviews":"/#reviews","/gallery":"/#results","/faq":"/#faq"};
+      var rules = [["lowville","/areas/lowville-ny/"],["watertown","/areas/watertown-ny/"],["carthage","/areas/carthage-ny/"],["fort[-_ ]?drum","/areas/fort-drum-ny/"],["croghan","/areas/croghan-ny/"],["lyons[-_ ]?falls","/areas/lyons-falls-ny/"],["harrisville","/areas/harrisville-ny/"],["old[-_ ]?forge","/areas/old-forge-ny/"],["lewis","/service-areas/#lewis-county"],["jefferson","/service-areas/#jefferson-county"],["herkimer|adirondack","/service-areas/#herkimer-county"],["carpet|rug|floor|upholster|strip|wax","/services/carpet-cleaning/"],["airbnb|rental|vacation|turnover|host|camp","/services/airbnb-cleaning/"],["move|moving|pcs","/services/move-in-move-out-cleaning/"],["deep","/services/deep-cleaning/"],["commercial|office|business|janitor","/services/commercial-cleaning/"],["residential|house|home-clean|maid|housekeep","/services/house-cleaning/"],["location|area|town|city|county|serv(e|ing)-","/service-areas/"],["service","/services/"],["contact|quote|estimate|book|schedule|appointment","/#quote"],["about|story|team|owner","/#about"],["review|testimonial","/#reviews"],["faq|question","/#faq"],["gallery|photo|result|before|after","/#results"],["privacy","/privacy.html"]];
+      var p = decodeURIComponent(location.pathname).toLowerCase()
+        .replace(/\/(index|default|home)\.(html?|php|aspx?)$/, "/")
+        .replace(/\.(html?|php|aspx?)$/, "")
+        .replace(/\/+$/, "") || "/";
+      var target = exact[p];
+      for (var i = 0; !target && i < rules.length; i++) {
+        if (new RegExp(rules[i][0]).test(p)) target = rules[i][1];
+      }
+      location.replace(target || "/");
+    })();
+  </script>
+</head>
+<body>
+  <main class="container" style="padding:80px 0;text-align:center">
+    <h1>This page has moved</h1>
+    <p>Taking you to the new Reali Clean site&hellip; If nothing happens, <a href="/">go to the homepage</a>.</p>
+  </main>
+</body>
+</html>

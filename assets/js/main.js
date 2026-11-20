@@ -3,22 +3,17 @@
   "use strict";
 
   /*
-   * Quote form delivery.
-   * Leave empty to open the visitor's email app with a pre-filled message to
-   * BUSINESS_EMAIL. To receive submissions without an email app, paste a form
-   * endpoint here (e.g. Formspree "https://formspree.io/f/xxxxxx"); the form
-   * will POST to it as JSON instead.
+   * Quote form delivery (live).
+   * FORM_ENDPOINT is the Zapier "Catch Hook" URL and FORM_TOKEN a shared token the Zap
+   * filters on. Both are filled in at deploy time by .github/workflows/pages.yml from the
+   * repository secrets ZAPIER_HOOK_URL and FORM_TOKEN, so they are never committed.
+   * If they haven't been filled in, the form falls back to opening the visitor's email app.
    */
-  var FORM_ENDPOINT = "";
+  var FORM_ENDPOINT = "__ZAPIER_HOOK_URL__";
+  var FORM_TOKEN = "__FORM_TOKEN__";
   var BUSINESS_EMAIL = "realiclean@gmail.com";
-
-  /*
-   * Demo mode: submitting the quote form plays an animated preview of the
-   * production automation (email, texts, QuickBooks customer + estimate, lead
-   * log) using the visitor's own details. Nothing is sent. Set to false, and
-   * remove the .demo-banner and .automation-card markup, when going live.
-   */
-  var DEMO_MODE = true;
+  var configured = FORM_ENDPOINT.indexOf("https://") === 0 && FORM_TOKEN.indexOf("__") !== 0;
+  var loadedAt = Date.now();
 
   /* ---- Header shadow on scroll ---- */
   var header = document.querySelector(".site-header");
@@ -74,8 +69,27 @@
     });
   }
 
+  /* ---- Footer year ---- */
+  var year = document.getElementById("year");
+  if (year) year.textContent = new Date().getFullYear();
+
   /* ---- Prefill quote form from area / service links ---- */
   var form = document.getElementById("quote-form");
+  if (!form) return;
+  var params = new URLSearchParams(window.location.search);
+  if (params.get("area")) {
+    var areaSelect = form.elements.area;
+    var wantArea = params.get("area");
+    if (!Array.prototype.some.call(areaSelect.options, function (o) { return o.value === wantArea; })) {
+      areaSelect.add(new Option(wantArea, wantArea));
+    }
+    areaSelect.value = wantArea;
+  }
+  if (params.get("service")) {
+    form.querySelectorAll('input[name="service"]').forEach(function (cb) {
+      if (cb.value === params.get("service")) cb.checked = true;
+    });
+  }
   document.querySelectorAll("[data-area]").forEach(function (link) {
     link.addEventListener("click", function () {
       form.elements.area.value = link.getAttribute("data-area");
@@ -129,22 +143,41 @@
       message: form.elements.message.value.trim()
     };
 
-    if (DEMO_MODE) {
-      runDemo(data);
+    // Spam checks: the hidden field is only ever filled by bots, and nobody fills the
+    // form in under 3 seconds. Pretend it worked so bots learn nothing.
+    var honeypot = form.elements.company_website;
+    if ((honeypot && honeypot.value) || Date.now() - loadedAt < 3000) {
+      form.reset();
+      setNote("Thank you! We got your request and will be in touch soon with your free quote.", "success");
+      return;
+    }
+    var last = 0;
+    try { last = Number(sessionStorage.getItem("rc-quote-sent") || 0); } catch (err) {}
+    if (Date.now() - last < 60000) {
+      setNote("We already have your request. We'll be in touch soon, or call (315) 804-4188.", "success");
       return;
     }
 
-    if (FORM_ENDPOINT) {
+    if (configured) {
       var btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       setNote("Sending...");
-      fetch(FORM_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(data)
-      })
-        .then(function (res) {
-          if (!res.ok) throw new Error("Bad response");
+      var payload = new URLSearchParams({
+        token: FORM_TOKEN,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        services: data.services,
+        area: data.area,
+        frequency: data.frequency,
+        message: data.message,
+        page: window.location.href,
+        submitted_at: new Date().toISOString()
+      });
+      // A form-encoded "simple" request needs no CORS preflight, which Zapier hooks don't answer.
+      fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: payload })
+        .then(function () {
+          try { sessionStorage.setItem("rc-quote-sent", String(Date.now())); } catch (err) {}
           form.reset();
           setNote("Thank you! We got your request and will be in touch soon with your free quote.", "success");
         })
@@ -179,66 +212,4 @@
     }
   });
 
-  /* ---- Demo automation preview ---- */
-  var flow = document.getElementById("flow");
-  var flowTimers = [];
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function runDemo(data) {
-    var values = {
-      first: data.name.split(/\s+/)[0],
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      services: data.services === "Not specified" ? "Cleaning (details TBD)" : data.services,
-      area: data.area === "Not specified" ? "area TBD" : data.area,
-      frequency: data.frequency === "Not specified" ? "Frequency TBD" : data.frequency
-    };
-    flow.querySelectorAll("[data-f]").forEach(function (el) {
-      el.textContent = values[el.getAttribute("data-f")];
-    });
-
-    var steps = flow.querySelectorAll(".flow-steps li");
-    var done = flow.querySelector(".flow-done");
-    steps.forEach(function (li) { li.className = ""; });
-    done.hidden = true;
-
-    form.hidden = true;
-    flow.hidden = false;
-    flow.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-    flow.focus({ preventScroll: true });
-
-    if (reduceMotion) {
-      steps.forEach(function (li) { li.classList.add("done"); });
-      done.hidden = false;
-      return;
-    }
-
-    var STEP_MS = 900;
-    steps.forEach(function (li, i) {
-      flowTimers.push(setTimeout(function () {
-        if (i > 0) steps[i - 1].classList.replace("active", "done");
-        li.classList.add("active");
-      }, 400 + i * STEP_MS));
-    });
-    flowTimers.push(setTimeout(function () {
-      steps[steps.length - 1].classList.replace("active", "done");
-      done.hidden = false;
-    }, 400 + steps.length * STEP_MS));
-  }
-
-  document.getElementById("flow-reset").addEventListener("click", function () {
-    flowTimers.forEach(clearTimeout);
-    flowTimers = [];
-    flow.hidden = true;
-    form.hidden = false;
-    form.reset();
-    setNote("We’ll never share your information. Quotes are always free.");
-    form.elements.name.focus({ preventScroll: true });
-    document.getElementById("quote").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
-  });
-
-  /* ---- Footer year ---- */
-  var year = document.getElementById("year");
-  if (year) year.textContent = new Date().getFullYear();
 })();
