@@ -137,9 +137,9 @@
       name: form.elements.name.value.trim(),
       phone: form.elements.phone.value.trim(),
       email: form.elements.email.value.trim(),
-      services: services.join(", ") || "Not specified",
-      area: form.elements.area.value || "Not specified",
-      frequency: form.elements.frequency.value || "Not specified",
+      services: services.join(", ") || "None",
+      area: form.elements.area.value || "None",
+      frequency: form.elements.frequency.value || "None",
       message: form.elements.message.value.trim()
     };
 
@@ -162,7 +162,7 @@
       var btn = form.querySelector('button[type="submit"]');
       btn.disabled = true;
       setNote("Sending...");
-      var payload = new URLSearchParams({
+      var fields = {
         token: FORM_TOKEN,
         name: data.name,
         phone: data.phone,
@@ -173,7 +173,12 @@
         message: data.message,
         page: window.location.href,
         submitted_at: new Date().toISOString()
+      };
+      // Never send an empty field: anything blank goes to Zapier as "None".
+      Object.keys(fields).forEach(function (key) {
+        if (!String(fields[key] || "").trim()) fields[key] = "None";
       });
+      var payload = new URLSearchParams(fields);
       // A form-encoded "simple" request needs no CORS preflight, which Zapier hooks don't answer.
       fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: payload })
         .then(function () {
