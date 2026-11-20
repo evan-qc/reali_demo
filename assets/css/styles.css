@@ -669,8 +669,9 @@ svg { width: 1em; height: 1em; flex: none; }
 .checklist a { color: inherit; }
 .area-towns { margin: 28px 0 0; text-align: center; color: #d3dcb8; line-height: 1.9; }
 .area-towns a { color: #fff; font-weight: 600; }
-.powered-by { opacity: .85; }
+.powered-by { display: inline-flex; align-items: center; gap: 8px; opacity: .85; transition: opacity .2s; }
 .powered-by:hover { opacity: 1; }
+.powered-by img { display: block; height: 22px; width: auto; }
 /* Spam trap: kept off-screen rather than display:none, which some bots skip. */
 .hp-field { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 @media (max-width: 860px) {
