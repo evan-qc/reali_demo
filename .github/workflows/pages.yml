@@ -1,0 +1,58 @@
+name: Deploy site
+
+# Publishes the site to GitHub Pages on every push to main.
+# The quote form's Zapier webhook URL and shared token come from repository secrets
+# (Settings > Secrets and variables > Actions): ZAPIER_HOOK_URL and FORM_TOKEN. They are
+# written into the published copy of assets/js/main.js only, never into the repository.
+# Requires Settings > Pages > Build and deployment > Source: "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble the site
+        run: |
+          mkdir _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude 'scripts' --exclude 'preview' --exclude '_site' --exclude 'README.md' ./ _site/
+
+      - name: Fill in the quote form settings
+        env:
+          ZAPIER_HOOK_URL: ${{ secrets.ZAPIER_HOOK_URL }}
+          FORM_TOKEN: ${{ secrets.FORM_TOKEN }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const f = "_site/assets/js/main.js";
+            const { ZAPIER_HOOK_URL: url = "", FORM_TOKEN: token = "" } = process.env;
+            if (!url || !token) { console.log("::warning::ZAPIER_HOOK_URL or FORM_TOKEN secret missing; the form will open the visitor'"'"'s email app instead."); process.exit(0); }
+            if (!url.startsWith("https://hooks.zapier.com/")) { console.log("::error::ZAPIER_HOOK_URL should start with https://hooks.zapier.com/"); process.exit(1); }
+            let js = fs.readFileSync(f, "utf8");
+            js = js.replace("__ZAPIER_HOOK_URL__", url).replace("__FORM_TOKEN__", token);
+            fs.writeFileSync(f, js);
+            console.log("Quote form connected to Zapier.");
+          '
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
