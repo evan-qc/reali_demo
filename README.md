@@ -29,8 +29,8 @@ and icons from `index.html` so every page matches:
 
 ```
 services/<service>/      6 service pages (house, deep, move-in/out, commercial, carpet, Airbnb)
-areas/<town>-ny/         8 town pages (Lowville, Watertown, Carthage, Fort Drum, Croghan,
-                         Lyons Falls, Harrisville, Old Forge)
+areas/<town>-ny/         9 town pages (Lowville, Watertown, Carthage, Fort Drum, Croghan,
+                         Lyons Falls, Harrisville, Rome, Forestport)
 services/, service-areas/  hub pages
 <old-path>/index.html    redirect pages for old-site addresses
 404.html                 sends any other old address to the closest new page by its words
@@ -84,6 +84,6 @@ email app addressed to `realiclean@gmail.com`.
 ## Before going live
 
 - **Service area towns.** The town pages (Croghan, Lyons Falls, Harrisville, Watertown,
-  Carthage, Old Forge, Fort Drum) come from the homepage's area cards; confirm them with the owner.
+  Carthage, Rome, Forestport, Fort Drum) come from the homepage's area cards; confirm them with the owner.
 - **Fort Drum PCS move-out cleans.** Mentioned on the Fort Drum and move-out pages and in the
   FAQ; confirm they offer this.

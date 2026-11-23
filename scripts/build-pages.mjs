@@ -243,7 +243,7 @@ out.set(
     path: '/services/',
     title: 'Cleaning Services in Lowville &amp; Northern NY',
     description:
-      'House, deep, move-in/move-out, commercial, carpet and Airbnb cleaning from Reali Clean, a Lowville, NY cleaning company serving Lewis, Jefferson and Herkimer Counties.',
+      'House, deep, move-in/move-out, commercial, carpet and Airbnb cleaning from Reali Clean, a Lowville, NY cleaning company serving Lewis, Jefferson, Oneida and Herkimer Counties.',
     crumbs: [{ name: 'Services', path: '/services/' }],
     body: {
       hero: `        <p class="kicker">What we clean</p>
@@ -348,7 +348,7 @@ out.set(
     path: '/service-areas/',
     title: 'Service Areas: Lowville, Watertown, Fort Drum &amp; Northern NY',
     description:
-      'Reali Clean serves Lowville, Watertown, Carthage, Fort Drum, Croghan, Lyons Falls, Harrisville, Old Forge and all of Lewis, Jefferson and Herkimer Counties.',
+      'Reali Clean serves Lowville, Watertown, Carthage, Fort Drum, Croghan, Lyons Falls, Harrisville, Rome, Forestport and all of Lewis, Jefferson, Oneida and Herkimer Counties.',
     crumbs: [{ name: 'Service areas', path: '/service-areas/' }],
     body: {
       hero: `        <p class="kicker">Service areas</p>
@@ -362,9 +362,11 @@ out.set(
           <h2>${c.name}</h2>
           <p>${c.blurb}</p>
         </header>
-        ${linkCards(
-          AREAS.filter((a) => a.county === c.id).map((a) => ({ href: `/areas/${a.slug}/`, title: `${a.town}, NY`, sub: 'House, carpet, commercial &amp; rental cleaning' })),
-        )}
+        ${AREAS.some((a) => a.county === c.id)
+          ? linkCards(
+              AREAS.filter((a) => a.county === c.id).map((a) => ({ href: `/areas/${a.slug}/`, title: `${a.town}, NY`, sub: 'House, carpet, commercial &amp; rental cleaning' })),
+            )
+          : `<p><a class="btn btn-red" href="/?area=${encodeURIComponent(c.name).replace(/%20/g, '+')}#quote">Get a free quote in ${c.name}</a></p>`}
       </div>
     </section>`,
       ).join('\n'),
@@ -403,7 +405,8 @@ const rules = [
   ...AREAS.map((a) => [a.town.toLowerCase().replace(/\s+/g, '[-_ ]?'), `/areas/${a.slug}/`]),
   ['lewis', '/service-areas/#lewis-county'],
   ['jefferson', '/service-areas/#jefferson-county'],
-  ['herkimer|adirondack', '/service-areas/#herkimer-county'],
+  ['oneida', '/service-areas/#oneida-county'],
+  ['herkimer|old[-_ ]?forge|adirondack', '/service-areas/#herkimer-county'],
   ['carpet|rug|floor|upholster|strip|wax', '/services/carpet-cleaning/'],
   ['airbnb|rental|vacation|turnover|host|camp', '/services/airbnb-cleaning/'],
   ['move|moving|pcs', '/services/move-in-move-out-cleaning/'],
