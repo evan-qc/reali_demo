@@ -54,6 +54,6 @@ If `DEMO_MODE` is false and `FORM_ENDPOINT` is empty, the form opens the visitor
 
 ## Before going live
 
-- **Service area town names.** The area cards list example towns (Croghan, Lyons Falls, Watertown, Carthage, Old Forge and so on). The old site only said "all surrounding areas", so check these with the owner.
+- **Service area town names.** The area cards list example towns (Croghan, Lyons Falls, Harrisville, Watertown, Carthage, Rome, Forestport). The old site only said "all surrounding areas", so check these with the owner.
 - **Fort Drum PCS move-out cleans.** Mentioned in the Fort Drum card and FAQ; confirm they offer this.
 - **Canonical URLs.** `index.html` uses `https://reali.evanjennings.com/`. If the site moves to `realiclean.net`, update the canonical, Open Graph and JSON-LD URLs in the `<head>` and the `CNAME` file.
